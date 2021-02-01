@@ -1,0 +1,33 @@
+service: test-sns-lambda
+
+custom:
+  mySns-Topic: "${self:service}-sns-consume"
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  profile: CustomProfile
+
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+      - "SNS:publish"
+      Resource: "arn:aws:sns:us-east-1:007400586299:sns-lambda-events"
+  
+  environment: 
+    SNS_LAMBDA_EVENTS_TOPIC: "arn:aws:sns:us-east-1:007400586299:test-sns-lambda-sns-consume"
+    
+functions:
+  snsConsume:
+    handler: handler/snsConsume.handler
+    description: target lambda to be executed SNS event
+    events:
+      - sns: ${self:custom.mySns-Topic}
+
+  publishLambda:
+    handler: handler/publishLambda.handler
+    description: handle publish event
+    events:
+      - http:
+          path: publishLambda
+          method: post
